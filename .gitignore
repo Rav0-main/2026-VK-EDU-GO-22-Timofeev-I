@@ -1,1 +1,2 @@
-.uniq.*
+uniq
+**/.uniq.test.tmp.out

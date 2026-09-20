@@ -1,12 +1,19 @@
 # Студент.
 **WEB-22 Тимофеев Иван**.
 
-# Q&A
-В ветке `uniq` находится часть 1. \
-В ветке `calc` находится часть 2.
+# Условие задачи uniq
+[Условие задачи](https://github.com/go-park-mail-ru/lectures/tree/master/1-basics/homework#user-content-часть-1-uniq)
 
-Чтобы переключиться на ветку:
+# Описание исходных файлов
+
 ```
-# BRANCH_NAME - uniq ИЛИ calc
-git checkout <BRANCH_NAME>
+.
+├── tests           # интеграционные тесты
+├── args.go         # файл для обработки аргументов командной строки
+├── go.mod
+├── main.go
+├── README.md
+├── uniq.go         # основная логика выполнения uniq
+└── views.go        # преобразования над строкой, для соблюдения различных аргументов 
 ```
+
