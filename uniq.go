@@ -4,18 +4,18 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"os"
+	"uniq/views"
 )
 
-type UniqConfig struct {
+type Config struct {
 	Mode       string // сделано string для удобства парсинга
 	IgnoreCase bool
 	InputFile  string
 	OutputFile string
-	ViewParams
+	views.Params
 }
 
-func uniqFprintln(out io.Writer, count uint, line string, config *UniqConfig) error {
+func uniqFprintln(out io.Writer, count uint, line string, config *Config) error {
 	var err error
 	switch config.Mode {
 	case "":
@@ -31,12 +31,11 @@ func uniqFprintln(out io.Writer, count uint, line string, config *UniqConfig) er
 			_, err = fmt.Fprintln(out, line)
 		}
 	default:
-		os.Exit(int(ErrRuntime))
 	}
 	return err
 }
 
-func Uniq(istream io.Reader, ostream io.Writer, lineView View, config *UniqConfig) error {
+func Uniq(istream io.Reader, ostream io.Writer, lineView views.View, config *Config) error {
 	// Передача входных данных и выходных данных сделана из io, так как
 	// это позволяет не считывать весь файл в память.
 
@@ -50,13 +49,13 @@ func Uniq(istream io.Reader, ostream io.Writer, lineView View, config *UniqConfi
 	var prevLine string
 	if in.Scan() {
 		prevLine = in.Text()
-		prevLineView = lineView(prevLine, &config.ViewParams)
+		prevLineView = lineView(prevLine, &config.Params)
 		lineCount++
 	}
 
 	for in.Scan() {
 		currentLine := in.Text()
-		currentLineView := lineView(currentLine, &config.ViewParams)
+		currentLineView := lineView(currentLine, &config.Params)
 
 		if currentLineView != prevLineView {
 			err := uniqFprintln(ostream, lineCount, prevLine, config)

@@ -7,13 +7,13 @@ import (
 	"strings"
 )
 
-// GetUniqConfig проверяет os.Args и возвращает заполненную структуру UniqConfig или error.
-func GetUniqConfig(args []string) (*UniqConfig, error) {
+// ParseArgsToConfig проверяет os.Args и возвращает заполненную структуру Config или error.
+func ParseArgsToConfig(args []string) (*Config, error) {
 	if len(args) == 0 {
 		return nil, errors.New("cписок аргументов пуст")
 	}
 
-	config := &UniqConfig{}
+	config := &Config{}
 	args = args[1:]
 	var positionals []string
 

@@ -1,23 +1,24 @@
-package main
+// Package views содержит функции для изменения строки
+package views
 
 import (
 	"strings"
 	"unicode"
 )
 
-type ViewParams struct {
+type Params struct {
 	FValue int
 	SValue int
 }
 
-type View func(str string, params *ViewParams) string
+type View func(str string, params *Params) string
 
-func ViewCompose(views ...View) View {
+func Compose(views ...View) View {
 	if len(views) == 0 {
 		panic("Аргумент 'views' пустой")
 	}
 
-	return func(str string, params *ViewParams) string {
+	return func(str string, params *Params) string {
 		for _, view := range views {
 			str = view(str, params)
 		}
@@ -25,33 +26,36 @@ func ViewCompose(views ...View) View {
 	}
 }
 
-// ViewStd возвращает саму строку
-func ViewStd(str string, params *ViewParams) string {
+// Std возвращает саму строку
+func Std(str string, params *Params) string {
 	return str
 }
 
-// ViewIgnoreCase возвращает строку в нижним регистре
-func ViewIgnoreCase(str string, params *ViewParams) string {
+// IgnoreCase возвращает строку в нижним регистре
+func IgnoreCase(str string, params *Params) string {
 	return strings.ToLower(str)
 }
 
-// ViewSkipFirstSRunes возвращает строку без первых s символов.
+// SkipFirstSRunes возвращает строку без первых s символов.
 // Если строка меньше, то возвращается пустая строка
-func ViewSkipFirstSRunes(str string, params *ViewParams) string {
+func SkipFirstSRunes(str string, params *Params) string {
 	if params.SValue < 0 {
 		panic("Аргумент 'SValue' должен быть int >= 0")
 	}
 
-	if params.SValue >= len(str) {
-		return ""
+	count := 0
+	for i := range str {
+		if count == params.SValue {
+			return str[i:]
+		}
+		count++
 	}
-
-	return str[params.SValue:]
+	return ""
 }
 
-// ViewSkipFirstFFields возвращает строку без первых f слов.
+// SkipFirstFFields возвращает строку без первых f слов.
 // Если строка содержит слов меньше, то возвращает пустую строку
-func ViewSkipFirstFFields(str string, params *ViewParams) string {
+func SkipFirstFFields(str string, params *Params) string {
 	if params.FValue < 0 {
 		panic("Аргумент 'FValue' должен быть int >= 0")
 	}

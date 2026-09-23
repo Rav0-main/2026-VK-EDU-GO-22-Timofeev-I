@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"uniq/views"
 )
 
 type ExitCode int
@@ -20,7 +21,7 @@ func printErr(err error) {
 }
 
 func main() {
-	config, err := GetUniqConfig(os.Args)
+	config, err := ParseArgsToConfig(os.Args)
 	if err != nil {
 		printErr(err)
 		os.Exit(int(ErrWrongArgs))
@@ -53,15 +54,15 @@ func main() {
 	}
 
 	// основная логика uniq
-	lineView := ViewStd
+	lineView := views.Std
 	if config.IgnoreCase {
-		lineView = ViewCompose(lineView, ViewIgnoreCase)
+		lineView = views.Compose(lineView, views.IgnoreCase)
 	}
 	if config.FValue != 0 {
-		lineView = ViewCompose(lineView, ViewSkipFirstFFields)
+		lineView = views.Compose(lineView, views.SkipFirstFFields)
 	}
 	if config.SValue != 0 {
-		lineView = ViewCompose(lineView, ViewSkipFirstSRunes)
+		lineView = views.Compose(lineView, views.SkipFirstSRunes)
 	}
 
 	if err = Uniq(fin, out, lineView, config); err != nil {
