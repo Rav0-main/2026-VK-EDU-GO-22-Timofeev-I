@@ -21,7 +21,7 @@ func printErr(err error) {
 }
 
 func main() {
-	config, err := ParseArgsToConfig(os.Args)
+	config, err := ParseArgsToConfig(os.Args[1:])
 	if err != nil {
 		printErr(err)
 		os.Exit(int(ErrWrongArgs))

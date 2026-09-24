@@ -9,12 +9,7 @@ import (
 
 // ParseArgsToConfig проверяет os.Args и возвращает заполненную структуру Config или error.
 func ParseArgsToConfig(args []string) (*Config, error) {
-	if len(args) == 0 {
-		return nil, errors.New("cписок аргументов пуст")
-	}
-
 	config := &Config{}
-	args = args[1:]
 	var positionals []string
 
 	for i := 0; i < len(args); {
@@ -76,7 +71,7 @@ func ParseArgsToConfig(args []string) (*Config, error) {
 	}
 
 	if len(positionals) > 2 {
-		return nil, fmt.Errorf("слишком много позиционных аргументов (максимум 2, получено %d)", len(positionals))
+		return nil, errors.New("слишком много аргументов: требуется [input_file [output_file]]")
 	}
 
 	if len(positionals) >= 1 {
