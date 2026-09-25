@@ -13,13 +13,12 @@ fin="$1"
 fargs="$2"
 
 if [ ! -f "$fin" ]; then
-  echo Error. \""$fin"\" not file.
+  echo Error. \""$fin"\" not file
   exit 1
 
 elif [ ! -f "$APP" ]; then
-  echo Error. Not found compiled app \""$APP"\".
+  echo Error. Not found compiled app \""$APP"\"
   exit 1
-
 fi
 
 args=""
