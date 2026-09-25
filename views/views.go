@@ -13,6 +13,8 @@ type Params struct {
 
 type View func(str string, params *Params) string
 
+// Compose возвращает View, которая является композицией views...
+// Порядок композиции: вначале views0, далее views1 и т.д.
 func Compose(views ...View) View {
 	if len(views) == 0 {
 		panic("Аргумент 'views' пустой")

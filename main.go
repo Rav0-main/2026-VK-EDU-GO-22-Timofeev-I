@@ -55,14 +55,14 @@ func main() {
 
 	// основная логика uniq
 	lineView := views.Std
-	if config.IgnoreCase {
-		lineView = views.Compose(lineView, views.IgnoreCase)
-	}
 	if config.FValue != 0 {
-		lineView = views.Compose(lineView, views.SkipFirstFFields)
+		lineView = views.Compose(views.SkipFirstFFields, lineView)
 	}
 	if config.SValue != 0 {
 		lineView = views.Compose(lineView, views.SkipFirstSRunes)
+	}
+	if config.IgnoreCase {
+		lineView = views.Compose(lineView, views.IgnoreCase)
 	}
 
 	if err = Uniq(fin, out, lineView, config); err != nil {
