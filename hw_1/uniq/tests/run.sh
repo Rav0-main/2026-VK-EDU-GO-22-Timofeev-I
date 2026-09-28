@@ -5,8 +5,8 @@ SCRIPT_DIR="$(dirname $(realpath $0))"
 cd "$(dirname $SCRIPT_DIR)"
 
 # build application
-if ! go build .; then
-  echo "Error. Can not build 'uniq'."
+if ! go build -o uniq.out .; then
+  echo "Error. Can not build 'uniq.out'."
   exit 1
 fi
 

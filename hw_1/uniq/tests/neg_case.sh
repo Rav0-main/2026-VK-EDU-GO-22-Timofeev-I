@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SRC_DIR="$(dirname $(dirname $0))"
-APP="$SRC_DIR/uniq"
+APP="$SRC_DIR/uniq.out"
 OUT_FNAME=".uniq.test.tmp.out"
 
 if [ $# != 2 ]; then

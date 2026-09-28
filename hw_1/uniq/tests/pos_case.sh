@@ -3,7 +3,7 @@
 SRC_DIR="$(dirname $(dirname $0))"
 COMPARATOR="$(dirname $0)/comparator.sh"
 
-APP="$SRC_DIR/uniq"
+APP="$SRC_DIR/uniq.out"
 OUT_FNAME=".uniq.test.tmp.out"
 
 if [ $# != 3 ]; then
