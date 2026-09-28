@@ -21,3 +21,10 @@
 ├── Makefile
 └── README.md
 ```
+
+# Сборка
+
+```bash
+# Выполняет go build -o calc.out .
+make
+```
