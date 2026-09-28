@@ -51,11 +51,11 @@ func TestUniq(t *testing.T) {
 			err := Uniq(tt.Input, &output, tt.LineView, &tt.Config)
 
 			if err != nil {
-				t.Errorf("RE.\nMust be success (err == nil)\nbut given: %s", err)
+				t.Errorf("RE.\nОжидается успешное выполнение\nно получено: %s", err)
 			}
 
 			if output.String() != tt.Answer {
-				t.Errorf("WA.\nExpected: %+v\nbut given: %+v", tt.Answer, output.String())
+				t.Errorf("WA.\nОжидается: %+v\nно получено: %+v", tt.Answer, output.String())
 			}
 		})
 	}

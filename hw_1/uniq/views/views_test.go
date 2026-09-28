@@ -6,19 +6,19 @@ import (
 )
 
 type TestArgs struct {
-	Name   string
-	Str    string
-	Params views.Params
-	View   views.View
-	Answer string
+	name   string
+	str    string
+	params views.Params
+	view   views.View
+	answer string
 }
 
 func runTests(tests []TestArgs, t *testing.T) {
 	for _, tt := range tests {
-		t.Run(tt.Name, func(t *testing.T) {
-			result := tt.View(tt.Str, &tt.Params)
-			if result != tt.Answer {
-				t.Errorf("WA.\nExpected: %s,\nbut given: %s\n", tt.Answer, result)
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.view(tt.str, &tt.params)
+			if result != tt.answer {
+				t.Errorf("WA.\nОжидается: %s\nно получено: %s\n", tt.answer, result)
 			}
 		})
 	}

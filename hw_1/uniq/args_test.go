@@ -27,9 +27,9 @@ func TestParseArgsToConfigPositive(t *testing.T) {
 		t.Run(tt.Name, func(t *testing.T) {
 			parsed, err := ParseArgsToConfig(tt.Args)
 			if err != nil {
-				t.Errorf("RE.\nMust be success (err == nil)\nbut given: %s", err)
+				t.Errorf("RE.\nОжидается успешное выполнение\nно получено: %s", err)
 			} else if *parsed != tt.Answer {
-				t.Errorf("WA.\nExpected: %+v\nbut given: %+v", tt.Answer, *parsed)
+				t.Errorf("WA.\nОжидается: %+v\nно получено: %+v", tt.Answer, *parsed)
 			}
 		})
 	}
@@ -56,7 +56,7 @@ func TestParseArgsConfigNegative(t *testing.T) {
 		t.Run(tt.Name, func(t *testing.T) {
 			_, err := ParseArgsToConfig(tt.Args)
 			if err == nil {
-				t.Errorf("WA.\nMust be error (error != nil)")
+				t.Errorf("WA.\nОжидается ошибочное выполнение\nно получено успешное выполнение")
 			}
 		})
 	}
