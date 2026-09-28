@@ -74,12 +74,12 @@ func TestTokenizePositive(t *testing.T) {
 			res, err := tokenize([]rune(tt.input))
 
 			if err != nil {
-				t.Errorf("RE.\nОжидается успешное выполнение\nно получено: %v", err)
+				t.Errorf("RE.\nОжидается успешное выполнение\nно получено: %+v", err)
 				return
 			}
 
 			if !reflect.DeepEqual(res, tt.answer) {
-				t.Errorf("WA.\nОжидается: %v\nно получено: %v", tt.answer, res)
+				t.Errorf("WA.\nОжидается: %v+\nно получено: %+v", tt.answer, res)
 			}
 		})
 	}

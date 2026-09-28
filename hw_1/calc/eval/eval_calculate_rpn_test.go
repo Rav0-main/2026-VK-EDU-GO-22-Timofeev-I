@@ -71,7 +71,7 @@ func TestCalculateRPNPositive(t *testing.T) {
 			}
 
 			if math.Abs(res-tt.answer) > EPS {
-				t.Errorf("WA.\nОжидается: %v\nно получено: %v", tt.answer, res)
+				t.Errorf("WA.\nОжидается: %+v\nно получено: %+v", tt.answer, res)
 			}
 		})
 	}
@@ -125,7 +125,6 @@ func TestCalculateRPNNegative(t *testing.T) {
 
 			if err == nil {
 				t.Errorf("WA.\nОжидается ошибочное выполнение\nно получено успешное выполнение")
-
 			}
 		})
 	}
