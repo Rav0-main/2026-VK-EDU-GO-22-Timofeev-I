@@ -1,14 +1,29 @@
 package main
 
 import (
+	"bufio"
 	"calc/eval"
 	"fmt"
+	"os"
 )
 
 func main() {
-	s := "1 + 2 / 2 + (-5 * 1)"
+	scanner := bufio.NewScanner(os.Stdin)
 
-	r, _ := eval.Calculate(s)
+	if scanner.Scan() {
+		input := scanner.Text()
+		res, err := eval.Calculate(input)
 
-	fmt.Println(r)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+			os.Exit(1)
+		}
+
+		fmt.Println(res)
+	}
+
+	if err := scanner.Err(); err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		os.Exit(1)
+	}
 }
