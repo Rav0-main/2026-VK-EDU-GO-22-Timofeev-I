@@ -9,18 +9,17 @@ import (
 )
 
 var (
-	ErrInvalidExpression     = errors.New("invalid expression")
-	ErrDivisionByZero        = errors.New("division by zero")
-	ErrMismatchedParentheses = errors.New("mismatched parentheses")
+	ErrInvalidExpression     = errors.New("некорректное выражение")
+	ErrDivisionByZero        = errors.New("деление на ноль")
+	ErrMismatchedParentheses = errors.New("утеряны открывающие/закрывающие скобки")
 )
 
-// TokenType определяет тип токена в выражении.
 type tokenType int
 
-// TODO: добавить tokenUnaryMinus и tokenUnaryPlus, заменить tokenOperator на tokenBinaryOperator
 const (
 	tokenNumber tokenType = iota
-	tokenOperator
+	tokenBinaryOperator
+	tokenUnaryOperator
 	tokenLeftParen
 	tokenRightParen
 )
@@ -28,7 +27,7 @@ const (
 type token struct {
 	typ tokenType
 
-	// TODO: может быть стоит оптимизировать память: хранить (start_i, end_i)
+	// TODO: оптимизировать двумя указателями: (start_i, end_i)
 	value string
 }
 
@@ -40,7 +39,7 @@ func Calculate(expr string) (float64, error) {
 	}
 
 	if len(tokens) == 0 {
-		return 0, fmt.Errorf("%w: empty expression", ErrInvalidExpression)
+		return 0, fmt.Errorf("%w: пустое выражение", ErrInvalidExpression)
 	}
 
 	rpn, err := shuntingYard(tokens)
@@ -56,7 +55,7 @@ func Calculate(expr string) (float64, error) {
 	return result, nil
 }
 
-// tokenize разбивает строку на токены с поддержкой унарных минусов.
+// tokenize разбивает строку на токены с поддержкой унарных плюсов и минусов.
 func tokenize(expr string) ([]token, error) {
 	var tokens []token
 	runes := []rune(expr)
@@ -78,7 +77,7 @@ func tokenize(expr string) ([]token, error) {
 			for i < n && (unicode.IsDigit(runes[i]) || runes[i] == '.') {
 				if runes[i] == '.' {
 					if hasDot {
-						return nil, fmt.Errorf("multiple dots in number at index %d", i)
+						return nil, fmt.Errorf("множество точек в числе с начальным индексом: %d", i)
 					}
 					hasDot = true
 				}
@@ -86,7 +85,7 @@ func tokenize(expr string) ([]token, error) {
 			}
 			numStr := string(runes[start:i])
 			if numStr == "." {
-				return nil, fmt.Errorf("invalid number '.' at index %d", start)
+				return nil, fmt.Errorf("неправильное число '.' с индексом: %d", start)
 			}
 			tokens = append(tokens, token{typ: tokenNumber, value: numStr})
 			continue
@@ -94,29 +93,27 @@ func tokenize(expr string) ([]token, error) {
 
 		// Операторы
 		if isOperator(ch) {
-			// Проверка на унарный минус:
-			// Минус является унарным, если он идет первым или сразу после '(' или другого оператора.
-			if ch == '-' {
+			// Проверка на унарный плюс/минус:
+			// Оператор унарный, если он идет первым, сразу после '('.
+			if ch == '-' || ch == '+' {
 				isUnary := false
 				if len(tokens) == 0 {
 					isUnary = true
 				} else {
 					prevToken := tokens[len(tokens)-1]
-					if prevToken.typ == tokenLeftParen || prevToken.typ == tokenOperator {
+					if prevToken.typ == tokenLeftParen {
 						isUnary = true
 					}
 				}
 
 				if isUnary {
-					tokens = append(tokens, token{typ: tokenOperator, value: "u-"})
+					tokens = append(tokens, token{typ: tokenUnaryOperator, value: string(ch)})
 					i++
 					continue
 				}
 			}
 
-			// TODO: сделать унарный плюс
-
-			tokens = append(tokens, token{typ: tokenOperator, value: string(ch)})
+			tokens = append(tokens, token{typ: tokenBinaryOperator, value: string(ch)})
 			i++
 			continue
 		}
@@ -133,7 +130,7 @@ func tokenize(expr string) ([]token, error) {
 			continue
 		}
 
-		return nil, fmt.Errorf("unexpected character '%c' at index %d", ch, i)
+		return nil, fmt.Errorf("неизвестный символ '%c' с индексом: %d", ch, i)
 	}
 
 	return tokens, nil
@@ -143,11 +140,13 @@ func isOperator(ch rune) bool {
 	return ch == '+' || ch == '-' || ch == '*' || ch == '/'
 }
 
-func precedence(op string) int {
-	// TODO: может быть стоит это в map?
-	switch op {
-	case "u-":
-		return 3 // Самый высокий приоритет для унарного минуса
+func precedence(t token) int {
+	if t.typ == tokenUnaryOperator {
+		return 3 // Высокий приоритет унарных операторов
+	}
+
+	// TODO: map?
+	switch t.value {
 	case "*", "/":
 		return 2
 	case "+", "-":
@@ -167,12 +166,19 @@ func shuntingYard(tokens []token) ([]token, error) {
 		case tokenNumber:
 			output = append(output, t)
 
-		case tokenOperator:
-			for len(stack) > 0 && stack[len(stack)-1].typ == tokenOperator {
+		case tokenUnaryOperator:
+			// Унарный оператор правоассоциативен — просто помещаем его в стек
+			stack = append(stack, t)
+
+		case tokenBinaryOperator:
+			for len(stack) > 0 {
 				top := stack[len(stack)-1]
-				// Унарный минус правоассоциативен, бинарные - левоассоциативны
-				if (t.value != "u-" && precedence(t.value) <= precedence(top.value)) ||
-					(t.value == "u-" && precedence(t.value) < precedence(top.value)) {
+				if top.typ == tokenLeftParen {
+					break
+				}
+
+				// Выталкиваем из стека операторы с большим или равным приоритетом
+				if precedence(top) >= precedence(t) {
 					output = append(output, top)
 					stack = stack[:len(stack)-1]
 				} else {
@@ -222,19 +228,20 @@ func evalRPN(tokens []token) (float64, error) {
 		case tokenNumber:
 			val, err := strconv.ParseFloat(t.value, 64)
 			if err != nil {
-				return 0, fmt.Errorf("%w: invalid float format", ErrInvalidExpression)
+				return 0, fmt.Errorf("%w: неправильный формат вещественного числа", ErrInvalidExpression)
 			}
 			stack = append(stack, val)
 
-		case tokenOperator:
-			if t.value == "u-" {
-				if len(stack) < 1 {
-					return 0, ErrInvalidExpression
-				}
-				stack[len(stack)-1] = -stack[len(stack)-1]
-				continue
+		case tokenUnaryOperator:
+			if len(stack) < 1 {
+				return 0, ErrInvalidExpression
 			}
+			if t.value == "-" {
+				stack[len(stack)-1] = -stack[len(stack)-1]
+			}
+			// Унарный "+" ничего не делает с числом
 
+		case tokenBinaryOperator:
 			if len(stack) < 2 {
 				return 0, ErrInvalidExpression
 			}
