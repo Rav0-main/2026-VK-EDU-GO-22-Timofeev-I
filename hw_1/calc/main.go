@@ -7,6 +7,10 @@ import (
 	"os"
 )
 
+func printErr(err error) {
+	fmt.Fprintf(os.Stderr, "Ошибка: %s\n", err)
+}
+
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
@@ -15,7 +19,7 @@ func main() {
 		res, err := eval.Calculate(input)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err)
+			printErr(err)
 			os.Exit(1)
 		}
 
@@ -23,7 +27,7 @@ func main() {
 	}
 
 	if err := scanner.Err(); err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
+		printErr(err)
 		os.Exit(1)
 	}
 }
