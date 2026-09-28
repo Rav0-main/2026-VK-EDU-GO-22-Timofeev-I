@@ -24,6 +24,9 @@ const (
 	tokenRightParen
 )
 
+var unaryOperatorPrecedences map[rune]int = map[rune]int{'+': 3, '-': 3}
+var binaryOperatorPrecedences map[rune]int = map[rune]int{'*': 2, '/': 2, '+': 1, '-': 1}
+
 type token struct {
 	typ tokenType
 
@@ -95,7 +98,7 @@ func tokenize(expr string) ([]token, error) {
 		if isOperator(ch) {
 			// Проверка на унарный плюс/минус:
 			// Оператор унарный, если он идет первым, сразу после '('.
-			if ch == '-' || ch == '+' {
+			if isUnaryOperator(ch) {
 				isUnary := false
 				if len(tokens) == 0 {
 					isUnary = true
@@ -137,22 +140,27 @@ func tokenize(expr string) ([]token, error) {
 }
 
 func isOperator(ch rune) bool {
-	return ch == '+' || ch == '-' || ch == '*' || ch == '/'
+	return isUnaryOperator(ch) || isBinaryOperator(ch)
+}
+
+func isUnaryOperator(ch rune) bool {
+	_, ok := unaryOperatorPrecedences[ch]
+	return ok
+}
+
+func isBinaryOperator(ch rune) bool {
+	_, ok := binaryOperatorPrecedences[ch]
+	return ok
 }
 
 func precedence(t token) int {
-	if t.typ == tokenUnaryOperator {
-		return 3 // Высокий приоритет унарных операторов
-	}
-
-	// TODO: map?
-	switch t.value {
-	case "*", "/":
-		return 2
-	case "+", "-":
-		return 1
+	switch t.typ {
+	case tokenUnaryOperator:
+		return unaryOperatorPrecedences[rune(t.value[0])]
+	case tokenBinaryOperator:
+		return binaryOperatorPrecedences[rune(t.value[0])]
 	default:
-		return 0
+		return -1
 	}
 }
 
