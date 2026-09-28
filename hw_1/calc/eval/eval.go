@@ -24,8 +24,42 @@ const (
 	tokenRightParen
 )
 
-var unaryOperatorPrecedences map[rune]int = map[rune]int{'+': 3, '-': 3}
-var binaryOperatorPrecedences map[rune]int = map[rune]int{'*': 2, '/': 2, '+': 1, '-': 1}
+type unaryOperator struct {
+	precedence int
+	action     func(num float64) (float64, error)
+}
+
+type binaryOperator struct {
+	precedence int
+	action     func(num1 float64, num2 float64) (float64, error)
+}
+
+var unaryOperators map[rune]unaryOperator = map[rune]unaryOperator{
+	'+': unaryOperator{3, func(num float64) (float64, error) {
+		return num, nil
+	}},
+	'-': unaryOperator{3, func(num float64) (float64, error) {
+		return -num, nil
+	}},
+}
+
+var binaryOperators map[rune]binaryOperator = map[rune]binaryOperator{
+	'*': binaryOperator{2, func(num1 float64, num2 float64) (float64, error) {
+		return num1 * num2, nil
+	}},
+	'/': binaryOperator{2, func(num1 float64, num2 float64) (float64, error) {
+		if num2 == 0 {
+			return 0, ErrDivisionByZero
+		}
+		return num1 / num2, nil
+	}},
+	'+': binaryOperator{1, func(num1 float64, num2 float64) (float64, error) {
+		return num1 + num2, nil
+	}},
+	'-': binaryOperator{1, func(num1 float64, num2 float64) (float64, error) {
+		return num1 - num2, nil
+	}},
+}
 
 type token struct {
 	typ tokenType
@@ -144,21 +178,23 @@ func isOperator(ch rune) bool {
 }
 
 func isUnaryOperator(ch rune) bool {
-	_, ok := unaryOperatorPrecedences[ch]
+	_, ok := unaryOperators[ch]
 	return ok
 }
 
 func isBinaryOperator(ch rune) bool {
-	_, ok := binaryOperatorPrecedences[ch]
+	_, ok := binaryOperators[ch]
 	return ok
 }
 
 func precedence(t token) int {
 	switch t.typ {
 	case tokenUnaryOperator:
-		return unaryOperatorPrecedences[rune(t.value[0])]
+		return unaryOperators[rune(t.value[0])].precedence
+
 	case tokenBinaryOperator:
-		return binaryOperatorPrecedences[rune(t.value[0])]
+		return binaryOperators[rune(t.value[0])].precedence
+
 	default:
 		return -1
 	}
@@ -244,10 +280,11 @@ func evalRPN(tokens []token) (float64, error) {
 			if len(stack) < 1 {
 				return 0, ErrInvalidExpression
 			}
-			if t.value == "-" {
-				stack[len(stack)-1] = -stack[len(stack)-1]
+			res, err := unaryOperators[rune(t.value[0])].action(stack[len(stack)-1])
+			if err != nil {
+				return 0, fmt.Errorf("%w: ошибка унарного оператора %s", err, t.value)
 			}
-			// Унарный "+" ничего не делает с числом
+			stack[len(stack)-1] = res
 
 		case tokenBinaryOperator:
 			if len(stack) < 2 {
@@ -258,19 +295,9 @@ func evalRPN(tokens []token) (float64, error) {
 			a := stack[len(stack)-2]
 			stack = stack[:len(stack)-2]
 
-			var res float64
-			switch t.value {
-			case "+":
-				res = a + b
-			case "-":
-				res = a - b
-			case "*":
-				res = a * b
-			case "/":
-				if b == 0 {
-					return 0, ErrDivisionByZero
-				}
-				res = a / b
+			res, err := binaryOperators[rune(t.value[0])].action(a, b)
+			if err != nil {
+				return 0, fmt.Errorf("%w: ошибка бинарного оператора %s", err, t.value)
 			}
 			stack = append(stack, res)
 		}
