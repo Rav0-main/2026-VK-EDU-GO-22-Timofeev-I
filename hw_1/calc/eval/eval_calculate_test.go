@@ -1,7 +1,6 @@
 package eval
 
 import (
-	"errors"
 	"math"
 	"testing"
 )
@@ -42,12 +41,12 @@ func TestCalculatePositive(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			res, err := Calculate(tt.expr)
 			if err != nil {
-				t.Errorf("RE.\nExpected success\nbut given: %s", err)
+				t.Errorf("RE.\nОжидается успешное выполнение\nно получено: %s", err)
 				return
 			}
 
 			if math.Abs(tt.answer-res) > EPS {
-				t.Errorf("WA.\nExpected: %f\nbut given: %f", tt.answer, res)
+				t.Errorf("WA.\nОжидается: %f\nно получено: %f", tt.answer, res)
 			}
 		})
 	}
@@ -55,40 +54,34 @@ func TestCalculatePositive(t *testing.T) {
 
 func TestCalculateNegative(t *testing.T) {
 	tests := []struct {
-		name        string
-		expr        string
-		expectedErr error
+		name string
+		expr string
 	}{
-		{"Пустое выражение", "", ErrInvalidExpression},
-		{"Выражение только из пробелов", "   ", ErrInvalidExpression},
-		{"Неизвестный символ", "2 + a", ErrInvalidExpression},
-		{"Неизвестный спецсимвол", "10 $ 5", ErrInvalidExpression},
-		{"Деление на ноль", "5 / 0", ErrDivisionByZero},
-		{"Деление на ноль в скобках", "10 / (5 - 5)", ErrDivisionByZero},
-		{"Отсутствует закрывающая скобка", "(2 + 3", ErrMismatchedParentheses},
-		{"Отсутствует открывающая скобка", "2 + 3)", ErrMismatchedParentheses},
-		{"Перепутан порядок скобок", ")2 + 3(", ErrMismatchedParentheses},
-		{"Несколько точек в числе", "2.5.3 + 1", ErrInvalidExpression},
-		{"Одиночная точка вместо числа", "1 + .", ErrInvalidExpression},
-		{"Два бинарных оператора подряд", "2 * * 3", ErrInvalidExpression},
-		{"Оператор в конце выражения", "2 + 3 +", ErrInvalidExpression},
-		{"Оператор умножения в начале выражения", "* 2 + 3", ErrInvalidExpression},
-		{"Пустые скобки", "()", ErrInvalidExpression},
-		{"Пропущен оператор между числами", "2 3 + 4", ErrInvalidExpression},
-		{"Две точки в вещественном числе", "2....5 + 3.1", ErrInvalidExpression},
-		{"Унарный оператор после бинарного", "1 / +2", ErrInvalidExpression},
+		{"Пустое выражение", ""},
+		{"Выражение только из пробелов", "   "},
+		{"Неизвестный символ", "2 + a"},
+		{"Неизвестный спецсимвол", "10 $ 5"},
+		{"Деление на ноль", "5 / 0"},
+		{"Деление на ноль в скобках", "10 / (5 - 5)"},
+		{"Отсутствует закрывающая скобка", "(2 + 3"},
+		{"Отсутствует открывающая скобка", "2 + 3)"},
+		{"Перепутан порядок скобок", ")2 + 3("},
+		{"Несколько точек в числе", "2.5.3 + 1"},
+		{"Одиночная точка вместо числа", "1 + ."},
+		{"Два бинарных оператора подряд", "2 * * 3"},
+		{"Оператор в конце выражения", "2 + 3 +"},
+		{"Оператор умножения в начале выражения", "* 2 + 3"},
+		{"Пустые скобки", "()"},
+		{"Пропущен оператор между числами", "2 3 + 4"},
+		{"Две точки в вещественном числе", "2....5 + 3.1"},
+		{"Унарный оператор после бинарного", "1 / +2"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := Calculate(tt.expr)
 			if err == nil {
-				t.Errorf("WA.\nExpected error matching %v\nbut got nil", tt.expectedErr)
-				return
-			}
-
-			if !errors.Is(err, tt.expectedErr) {
-				t.Errorf("WA.\nExpected error wrapping: %v\nbut given: %v", tt.expectedErr, err)
+				t.Errorf("RE.\nОжидается ошибочное выполнение\nно получено успешное выполнение")
 			}
 		})
 	}

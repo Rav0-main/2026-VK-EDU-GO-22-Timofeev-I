@@ -71,7 +71,8 @@ type token struct {
 
 // Calculate принимает математическое выражение в виде строки и возвращает результат его вычисления.
 func Calculate(expr string) (float64, error) {
-	tokens, err := tokenize(expr)
+	runes := []rune(expr)
+	tokens, err := tokenize(runes)
 	if err != nil {
 		return 0, fmt.Errorf("%w: %v", ErrInvalidExpression, err)
 	}
@@ -80,12 +81,12 @@ func Calculate(expr string) (float64, error) {
 		return 0, fmt.Errorf("%w: пустое выражение", ErrInvalidExpression)
 	}
 
-	rpn, err := shuntingYard(expr, tokens)
+	rpn, err := shuntingYard(runes, tokens)
 	if err != nil {
 		return 0, err
 	}
 
-	result, err := calculateRPN(expr, rpn)
+	result, err := calculateRPN(runes, rpn)
 	if err != nil {
 		return 0, err
 	}
@@ -94,9 +95,8 @@ func Calculate(expr string) (float64, error) {
 }
 
 // tokenize разбивает строку на токены с поддержкой унарных плюсов и минусов.
-func tokenize(expr string) ([]token, error) {
+func tokenize(runes []rune) ([]token, error) {
 	var tokens []token
-	runes := []rune(expr)
 	n := len(runes)
 	i := 0
 
@@ -175,13 +175,13 @@ func isBinaryOperator(ch rune) bool {
 	return ok
 }
 
-func precedence(expr string, t token) int {
+func precedence(runes []rune, t token) int {
 	switch t.typ {
 	case tokenUnaryOperator:
-		return unaryOperators[rune(expr[t.startIndex])].precedence
+		return unaryOperators[runes[t.startIndex]].precedence
 
 	case tokenBinaryOperator:
-		return binaryOperators[rune(expr[t.startIndex])].precedence
+		return binaryOperators[runes[t.startIndex]].precedence
 
 	default:
 		return -1
@@ -189,7 +189,7 @@ func precedence(expr string, t token) int {
 }
 
 // shuntingYard преобразует список токенов в инфиксной нотации в ОПЗ (RPN).
-func shuntingYard(expr string, tokens []token) ([]token, error) {
+func shuntingYard(runes []rune, tokens []token) ([]token, error) {
 	var output []token
 	var stack []token
 
@@ -208,7 +208,7 @@ func shuntingYard(expr string, tokens []token) ([]token, error) {
 					break
 				}
 
-				if precedence(expr, top) >= precedence(expr, t) {
+				if precedence(runes, top) >= precedence(runes, t) {
 					output = append(output, top)
 					stack = stack[:len(stack)-1]
 				} else {
@@ -250,13 +250,13 @@ func shuntingYard(expr string, tokens []token) ([]token, error) {
 }
 
 // calculateRPN вычисляет значение выражения в ОПЗ (RPN).
-func calculateRPN(expr string, tokens []token) (float64, error) {
+func calculateRPN(runes []rune, tokens []token) (float64, error) {
 	var stack []float64
 
 	for _, t := range tokens {
 		switch t.typ {
 		case tokenNumber:
-			val, err := strconv.ParseFloat(expr[t.startIndex:t.endIndex], 64)
+			val, err := strconv.ParseFloat(string(runes[t.startIndex:t.endIndex]), 64)
 			if err != nil {
 				return 0, fmt.Errorf("%w: неправильный формат вещественного числа", ErrInvalidExpression)
 			}
@@ -266,9 +266,9 @@ func calculateRPN(expr string, tokens []token) (float64, error) {
 			if len(stack) < 1 {
 				return 0, ErrInvalidExpression
 			}
-			res, err := unaryOperators[rune(expr[t.startIndex])].action(stack[len(stack)-1])
+			res, err := unaryOperators[runes[t.startIndex]].action(stack[len(stack)-1])
 			if err != nil {
-				return 0, fmt.Errorf("%w: ошибка унарного оператора %s", err, expr[t.startIndex:t.endIndex])
+				return 0, fmt.Errorf("%w: ошибка унарного оператора %s", err, string(runes[t.startIndex:t.endIndex]))
 			}
 			stack[len(stack)-1] = res
 
@@ -281,9 +281,9 @@ func calculateRPN(expr string, tokens []token) (float64, error) {
 			a := stack[len(stack)-2]
 			stack = stack[:len(stack)-2]
 
-			res, err := binaryOperators[rune(expr[t.startIndex])].action(a, b)
+			res, err := binaryOperators[runes[t.startIndex]].action(a, b)
 			if err != nil {
-				return 0, fmt.Errorf("%w: ошибка бинарного оператора %s", err, expr[t.startIndex:t.endIndex])
+				return 0, fmt.Errorf("%w: ошибка бинарного оператора %s", err, string(runes[t.startIndex:t.endIndex]))
 			}
 			stack = append(stack, res)
 		}
